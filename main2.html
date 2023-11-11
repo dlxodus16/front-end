@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="EUC-KR">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        h1{
+            text-align: center;
+        }
+        span{
+            font-size: 24px;
+        }
+        form{
+            float: right;
+        }
+        .btn{
+            width: 50px;
+            margin: 5px;
+        }
+        #grade1{
+            text-align: center;
+        }
+        .text_left{
+            text-align: left;
+        }
+        tr.color{
+            background-color: #00498c;
+            color:white;
+        }
+        tr.colored:nth-child(even){
+            background-color:#97b0d1;
+        }
+
+        tr.colored:nth-child(odd){
+            background-color:#dce4f0;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>Front-end 과제</h1>
+    <div>
+        <span>1학년</span>
+        <form>
+            <input class="btn" type="button" value="추가" v-on:click="addScore">
+            <input class="btn" type="button" value="삭제" v-on:click="removeScore">
+            <input class="btn" type="button" value="저장" v-on:click="saveScore">
+        </form>
+    </div>
+    <table border="1" width="100%" id="grade1">
+        <tr class="color">
+            <th width="3%">이수</th>
+            <th width="3%">필수</th>
+            <th>과목명</th>
+            <th width="3%">학점</th>
+            <th>출석점수</th>
+            <th>과제점수</th>
+            <th>중간고사</th>
+            <th>기말고사</th>
+            <th>총점</th>
+            <th>평균</th>
+            <th width="3%">성적</th>
+        </tr>
+        <tr v-for="(score,index) in scoresPass" v-on:click="selectSubject=index" class="colored">
+            <td>{{score.complete}}</td>
+            <td>{{score.required}}</td>
+            <td class="text_left">{{score.subject}}</td>
+            <td>{{score.credit}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{score.pass}}</td>
+        </tr>
+        <tr v-for="(score,index) in scores" v-on:click="selectSubject=(index+this.scoresPass.length)" class="colored">
+            <td>{{score.complete}}</td>
+            <td>{{score.required}}</td>
+            <td class="text_left">{{score.subject}}</td>
+            <td>{{score.credit}}</td>
+            <td>{{score.attendanceScore}}</td>
+            <td>{{score.assignmentScore}}</td>
+            <td>{{score.midtermExam}}</td>
+            <td>{{score.finalExam}}</td>
+            <td>{{score.totalScore}}</td>
+            <td></td>
+            <td v-if="grade(score.totalScore)=='F'" style="color: red;">
+                {{grade(score.totalScore)}}
+            </td>
+            <td v-else>
+                {{grade(score.totalScore)}}
+            </td>
+        </tr>
+        <tr v-show="showInput">
+            <td>
+                <select name="complete" v-model="complete">
+                    <option>교양</option>
+                    <option>전공</option>
+                </select>
+            </td>
+            <td>
+                <select name="required" v-model="required">
+                    <option>필수</option>
+                    <option>선택</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" v-model="subject">
+            </td>
+            <td>
+                <input type="number" v-model="credit">
+            </td>
+            <td v-show="showCredit">
+                <input type="number" v-model="attendanceScore">
+            </td>
+            <td v-show="showCredit">
+                <input type="number" v-model="assignmentScore">
+            </td>
+            <td v-show="showCredit">
+                <input type="number" v-model="midtermExam">
+            </td>
+            <td v-show="showCredit">
+                <input type="number" v-model="finalExam">
+            </td>
+            <td v-show="!showCredit" colspan="6">
+
+            </td>
+            <td v-show="!showCredit">
+                <select name="complete" v-model="pass">
+                    <option>P</option>
+                    <option>NP</option>
+                </select>
+            </td>
+        </tr>
+        <tr v-show="false"></tr>
+        <tr class="colored">
+            <td colspan="3">합계</td>
+            <td>{{totalCredit}}</td>
+            <td>{{totalAttendance}}</td>
+            <td>{{totalAssignment}}</td>
+            <td>{{totalMidterm}}</td>
+            <td>{{totalFinal}}</td>
+            <td>{{totalSumScore}}</td>
+            <td>{{avgScore}}</td>
+            <td>{{grade(avgScore)}}</td>
+        </tr>
+    </table>
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+    const app = Vue.createApp({
+        data(){
+            return{
+                showInput:false,
+                selectSubject:null,
+                scoresPass:[],
+                scores:[],
+                totalCredit:0,
+                totalAttendance:0,
+                totalAssignment:0,
+                totalMidterm:0,
+                totalFinal:0,
+                totalSumScore:0,
+                avgScore:0,
+                subject:'',
+                credit:0,
+                attendanceScore:0,
+                assignmentScore:0,
+                midtermExam:0,
+                finalExam:0,
+                showCredit:true,
+                pass:''
+            }
+        },
+        watch:{
+            subject(newVal,oldVal){
+                var subjects = []
+                for(var i=0;i<this.scoresPass.length;i++){
+                    subjects.push(this.scoresPass[i].subject)
+                }
+                for(var i=0;i<this.scores.length;i++){
+                    subjects.push(this.scores[i].subject)
+                }
+                if(subjects.includes(newVal)){
+                    alert('중복된 과목이 있습니다.')
+                    this.subject = oldVal
+                }
+            },
+            credit(val){
+                if(val==1){
+                    this.showCredit = false
+                }else{
+                    this.showCredit = true
+                }
+            },
+            attendanceScore(val){
+                if(val>20){
+                    this.attendanceScore = 20
+                }else if(val<0){
+                    this.attendanceScore = 0
+                }
+            },
+            assignmentScore(val){
+                if(val>20){
+                    this.assignmentScore = 20
+                }else if(val<0){
+                    this.assignmentScore = 0
+                }
+            },
+            midtermExam(val){
+                if(val>30){
+                    this.midtermExam = 30
+                }else if(val<0){
+                    this.midtermExam = 0
+                }
+            },
+            finalExam(val){
+                if(val>30){
+                    this.finalExam = 30
+                }else if(val<0){
+                    this.finalExam = 0
+                }
+            }
+        },
+        computed:{
+
+        },
+        methods:{
+            addScore(){
+                this.showInput = true
+            },
+            saveScore(){
+                if(this.credit==1){
+                    if(this.complete!=null && this.required!=null){
+                        let item = {
+                            complete:this.complete,
+                            required:this.required,
+                            subject:this.subject,
+                            credit:this.credit,
+                            pass:this.pass
+                        }
+                        this.scoresPass.push(item)
+                        this.complete = null
+                        this.required = null
+                        this.subject = null
+                        this.credit = null
+                        this.pass = null
+                        this.showInput = false
+                        this.sort()
+                    }
+                }else{
+                    if(this.complete!=null && this.required!=null){
+                        let item={
+                            complete:this.complete,
+                            required:this.required,
+                            subject:this.subject,
+                            credit:this.credit,
+                            attendanceScore:this.attendanceScore,
+                            assignmentScore:this.assignmentScore,
+                            midtermExam:this.midtermExam,
+                            finalExam:this.finalExam,
+                            totalScore:this.attendanceScore+this.assignmentScore+this.midtermExam+this.finalExam
+                        } 
+                        this.scores.push(item)
+                        this.complete = null
+                        this.required = null
+                        this.subject = null
+                        this.credit = null
+                        this.attendanceScore = null
+                        this.assignmentScore = null
+                        this.midtermExam = null
+                        this.finalExam = null
+                        this.showInput = false
+                        this.sort()
+                        this.sumScore()
+                    }
+                }
+                
+            },
+            sumScore(){
+                this.totalCredit = 0
+                this.totalAttendance = 0
+                this.totalAssignment= 0
+                this.totalMidterm = 0
+                this.totalFinal = 0
+                this.totalSumScore = 0
+                for(var i=0;i<this.scores.length;i++){
+                    this.totalCredit += this.scores[i].credit
+                    this.totalAttendance += this.scores[i].attendanceScore
+                    this.totalAssignment += this.scores[i].assignmentScore
+                    this.totalMidterm += this.scores[i].midtermExam
+                    this.totalFinal += this.scores[i].finalExam
+                    this.totalSumScore += this.scores[i].totalScore
+                }
+                if(this.scores.length==0){
+                    this.avgScore = 0
+                }else{
+                    this.avgScore = this.totalSumScore / (this.scores.length)
+                }
+            },
+            removeScore(){
+                if(this.selectSubject==null){
+                    alert('삭제할 행을 선택해주세요.')
+                }else if(this.selectSubject>=this.scoresPass.length){
+                    if(confirm((this.selectSubject+1)+'번째 행을 삭제하시겠습니까?')){
+                        this.scores.splice(this.selectSubject-this.scoresPass.length,1)
+                        this.sort()
+                        this.sumScore()
+                        this.selectSubject=null
+                    }
+                }else{
+                    if(confirm((this.selectSubject+1)+'번째 행을 삭제하시겠습니까?')){
+                        this.scoresPass.splice(this.selectSubject,1)
+                        this.sort()
+                        this.selectSubject=null
+                    }
+                }
+            },
+            grade(score){
+                if(score>=95){
+                    return 'A+'
+                }else if(score>=90){
+                    return 'A0'
+                }else if(score>=85){
+                    return 'B+'
+                }else if(score>=80){
+                    return 'B0'
+                }else if(score>=75){
+                    return 'C+'
+                }else if(score>=70){
+                    return 'C0'
+                }else if(score>=65){
+                    return 'D+'
+                }else if(score>=60){
+                    return 'D0'
+                }else{
+                    return 'F'
+                }
+            },
+            sort(){
+                this.scores.sort((a,b) => a.complete.localeCompare(b.complete)||a.required.localeCompare(b.required)||a.subject.localeCompare(b.subject));
+            }
+        }
+    })
+    app.mount('#app')
+</script>
+</body>
+</html>
