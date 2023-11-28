@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="EUC-KR">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+    <h1>Front-end 과제</h1>
+    <div v-for="val in [1,2,3]">
+        <div>
+            <span>{{val}}학년</span>
+            <form>
+                <input class="btn" type="button" value="추가" v-on:click="addScore(val)">
+                <input class="btn" type="button" value="삭제" v-on:click="removeScore(val)">
+                <input class="btn" type="button" value="저장" v-on:click="saveScore(val)">
+            </form>
+        </div>
+        <table border="1" width="100%" id="grade1">
+            <tr class="color">
+                <th width="3%">이수</th>
+                <th width="3%">필수</th>
+                <th>과목명</th>
+                <th width="3%">학점</th>
+                <th>출석점수</th>
+                <th>과제점수</th>
+                <th>중간고사</th>
+                <th>기말고사</th>
+                <th>총점</th>
+                <th>평균</th>
+                <th width="3%">성적</th>
+            </tr>
+            <tr v-for="(score,index) in gradeFilter(val,scoresPass)" v-on:click="selectSubject=index" class="colored">
+                <td>{{score.complete}}</td>
+                <td>{{score.required}}</td>
+                <td class="text_left">{{score.subject}}</td>
+                <td>{{score.credit}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{score.pass}}</td>
+            </tr>
+            <tr v-for="(score,index) in gradeFilter(val,scores)" v-on:click="selectSubject=(index+gradeFilter(val,scoresPass).length)" class="colored">
+                <!-- this.scoresPass.length -->
+                <td>{{score.complete}}</td>
+                <td>{{score.required}}</td>
+                <td class="text_left">{{score.subject}}</td>
+                <td>{{score.credit}}</td>
+                <td>{{score.attendanceScore}}</td>
+                <td>{{score.assignmentScore}}</td>
+                <td>{{score.midtermExam}}</td>
+                <td>{{score.finalExam}}</td>
+                <td>{{score.totalScore}}</td>
+                <td></td>
+                <td v-if="record(score.totalScore)=='F'" style="color: red;">
+                    {{record(score.totalScore)}}
+                </td>
+                <td v-else>
+                    {{record(score.totalScore)}}
+                </td>
+            </tr>
+            <tr v-show="showInput[val]">
+                <td>
+                    <select name="complete" v-model="complete">
+                        <option>교양</option>
+                        <option>전공</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="required" v-model="required">
+                        <option>필수</option>
+                        <option>선택</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" v-model="subject">
+                </td>
+                <td>
+                    <input type="number" v-model="credit">
+                </td>
+                <td v-show="showCredit">
+                    <input type="number" v-model="attendanceScore">
+                </td>
+                <td v-show="showCredit">
+                    <input type="number" v-model="assignmentScore">
+                </td>
+                <td v-show="showCredit">
+                    <input type="number" v-model="midtermExam">
+                </td>
+                <td v-show="showCredit">
+                    <input type="number" v-model="finalExam">
+                </td>
+                <td v-show="!showCredit" colspan="6">
+
+                </td>
+                <td v-show="!showCredit">
+                    <select name="complete" v-model="pass">
+                        <option>P</option>
+                        <option>NP</option>
+                    </select>
+                </td>
+            </tr>
+            <tr v-show="false"></tr>
+            <tr class="colored">
+                <td colspan="3">합계</td>
+                <td>{{totalCredit[val-1]}}</td>
+                <td>{{totalAttendance[val-1]}}</td>
+                <td>{{totalAssignment[val-1]}}</td>
+                <td>{{totalMidterm[val-1]}}</td>
+                <td>{{totalFinal[val-1]}}</td>
+                <td>{{totalSumScore[val-1]}}</td>
+                <td>{{avgScore[val-1]}}</td>
+                <td v-if="record(avgScore[val-1])=='F'" style="color: red;">
+                    {{record(avgScore[val-1])}}
+                </td>
+                <td v-else>
+                    {{record(avgScore[val-1])}}
+                </td>
+            </tr>
+        </table>
+        <br><br><br>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+h1{
+    text-align: center;
+}
+span{
+    font-size: 24px;
+}
+form{
+    float: right;
+}
+.btn{
+    width: 50px;
+    margin: 5px;
+}
+#grade1{
+    text-align: center;
+}
+.text_left{
+    text-align: left;
+}
+tr.color{
+    background-color: #00498c;
+    color:white;
+}
+tr.colored:nth-child(even){
+    background-color:#97b0d1;
+}
+
+tr.colored:nth-child(odd){
+    background-color:#dce4f0;
+}
